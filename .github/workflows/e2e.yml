@@ -11,6 +11,7 @@ on:
         description: 'Run E2E tests'
         required: false
         type: boolean
+        default: true
 
 jobs:
   build:
@@ -19,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20]  # Updated to match Cypress requirements
+        node: [20]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,15 +28,18 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Changed from 18 to 20
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci  # Use npm ci for cleaner, reproducible installs
 
       - name: Fix ESLint error (temporary)
         run: |
-          # Fix the unescaped apostrophe issue
-          sed -i "s/'/&apos;/g" ./app/page.js || echo "ESLint fix attempted"
+          # Fix the unescaped apostrophe issue - more targeted approach
+          if [ -f "./app/page.js" ]; then
+            sed -i "s/'/\\'/g" ./app/page.js || echo "ESLint fix attempted"
+          fi
 
       - name: Build application
         run: npm run build
@@ -48,11 +52,12 @@ jobs:
             .next/
             node_modules/
             package*.json
+          retention-days: 1
 
   test:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests == 'true' || github.event_name != 'workflow_dispatch'
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests == 'true') || github.event_name != 'workflow_dispatch'
     
     steps:
       - uses: actions/checkout@v4
@@ -61,20 +66,25 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: built-app
+          path: .
           
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Changed from 18 to 20
+          node-version: '20'
 
       - name: Install Cypress dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
-      - name: Test run
+      - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
           spec: cypress/e2e/*.cy.js
-          install: false  # Since we already installed dependencies
+          install: false
+          build: npm run build  # Ensure build runs if needed
+          start: npm start  # Start the application for testing
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120000
