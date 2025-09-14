@@ -18,7 +18,7 @@ export default function Home() {
         </div>
         
         <p className="text-gray-600 max-w-md text-lg">
-          Welcome to our beautiful website. We're glad to have you here!
+          Welcome to our beautiful website.
         </p>
         
         <div className="flex gap-4 mt-4">
