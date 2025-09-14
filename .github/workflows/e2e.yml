@@ -1,4 +1,4 @@
-name: Deploy & E2E test
+name: Build & E2E test
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: deploy
     steps:
       - uses: actions/checkout@v4
 
