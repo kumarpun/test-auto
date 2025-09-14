@@ -1,0 +1,33 @@
+name: E2E test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20]
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Test run
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          group: Test Specs
+          spec: cypress/integration/e2e/*.cy.js
