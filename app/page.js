@@ -26,7 +26,7 @@ export default function Home() {
             Get Started
           </button>
           <button className="border border-indigo-600 text-indigo-600 px-6 py-3 rounded-lg font-medium hover:bg-indigo-50 transition-colors">
-            Learn More
+            Learn More test
           </button>
         </div>
     
