@@ -22,19 +22,26 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'  # Changed from 18 to 20
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Build Next.js (if needed)
+        run: npm run build
+
       - name: Start Next.js server
-        run: npm run dev &
+        run: |
+          npm start &
+          echo "Server starting on port 3000"
         env:
           PORT: 3000
+          NODE_ENV: production
 
       - name: Wait for server to be ready
         run: |
-          npx wait-on http://localhost:3000 --timeout 60000
+          npx wait-on http://localhost:3000 --timeout 120000  # Increased timeout to 120 seconds
+          curl -f http://localhost:3000 || exit 1  # Verify server responds
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -42,4 +49,4 @@ jobs:
           browser: chrome
           spec: cypress/e2e/*.cy.js
           wait-on: 'http://localhost:3000'
-          wait-on-timeout: 60
+          wait-on-timeout: 120
