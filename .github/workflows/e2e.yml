@@ -53,8 +53,7 @@ jobs:
     # Fixed condition: Run tests on manual trigger with input=true OR on push/PR events
     if: |
       (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests == 'true') ||
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request'
+      (github.event_name != 'workflow_dispatch' && false)  # Never run on non-manual triggers
     
     steps:
       - uses: actions/checkout@v4
