@@ -24,8 +24,22 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Test run
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start Next.js server
+        run: npm run dev &
+        env:
+          PORT: 3000
+
+      - name: Wait for server to be ready
+        run: |
+          npx wait-on http://localhost:3000 --timeout 60000
+
+      - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
           spec: cypress/e2e/*.cy.js
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 60
